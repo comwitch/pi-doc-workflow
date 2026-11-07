@@ -1,49 +1,104 @@
-<!-- pi-doc-workflow template=0.1.0 audience=human -->
-# Human Knowledge Notes
+<!-- pi-doc-workflow template=0.2.0 audience=human -->
+# Rules for `docs/`
 
-These rules apply to articles in this directory, not to this instruction file.
-Read this file explicitly before creating or editing an article.
+These rules apply to knowledge articles, not to this instruction file.
+Read this file explicitly before creating or editing any article in this folder.
 
-## Audience and purpose
+## Purpose and reader
 
-- Write for a person who wants to remember and understand one topic, never for an AI agent.
-- Create or update a note only when the user requests it. Do not archive every conversation or task.
-- Default to Korean. Use English only when the user requests it.
-- Keep one topic per article and one idea per section, paragraph, or list item.
-- Include only the information worth remembering now. Leave optional depth for follow-up questions.
-- Prefer natural, concise sentences over telegraphic fragments, repetition, and exhaustive background.
+- This is the user's personal knowledge base: things they want to remember.
+- The reader is a human viewing files in Obsidian, never an AI agent.
+- Write only what the user should remember now. They can ask follow-up questions in chat.
+- One idea per sentence, one point per paragraph, and one topic per section.
 
-## Length
+## When to write
 
-- Aim for approximately 40-50 characters per sentence and approximately 300 characters per prose paragraph.
-- Keep each finished article between 1,500 and 3,000 characters unless the user explicitly requests another length.
-- Count Unicode characters, including spaces, in the visible Markdown body. Exclude YAML frontmatter, HTML comments, fenced code blocks (including Mermaid), and display-math blocks. Include prose, headings, lists, captions, and inline math source. This is a source-text convention, not a count of rendered glyphs.
-- Sentence and paragraph lengths are approximate readability targets. The article range is a completion check.
-- Do not pad weak material to reach the minimum or remove essential qualifications to fit the maximum. Narrow or split the topic, or ask the user to approve a shorter note.
+- Write only when the user asks to add or update a note in `docs/`.
+- Search for a note on the same topic before creating a file. Update it if it exists.
+- Do not archive ordinary conversation or task completion automatically.
 
-## Obsidian, equations, and diagrams
+## File format
 
-- Use plain Markdown compatible with Obsidian. No plugin-specific rendering is required.
-- Use `$...$` for inline math and `$$` blocks for display math.
-- Use fenced `mermaid` blocks for diagrams; keep node labels short and quote labels containing punctuation.
-- Normally include a meaningful equation and a diagram when they clarify the topic. Never invent irrelevant mathematics to satisfy a format; explain an omission when one representation does not apply.
-- Introduce what each equation explains. Define its symbols, assumptions, units, and coordinate frames where relevant.
-- Explicitly identify frame or unit conversions. Check dimensional consistency.
-- Explain what each diagram shows and what its arrows mean. A diagram must not replace the prose explanation.
-- Use relative links or Obsidian `[[wikilinks]]` when useful. Do not add empty index pages or placeholder articles.
+- Use `docs/<topic>.md` with a short Korean filename. Keep an English technical term when appropriate, such as `docs/DPS.md`.
+- Start with YAML frontmatter. Use actual dates in `YYYY-MM-DD` format; preserve `created` and refresh `updated` when editing.
 
-## Suggested article shape
+```yaml
+---
+title: <title>
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+tags: [<tag>]
+---
+```
 
-1. A title naming one topic.
-2. The few central facts worth remembering and why they matter.
-3. A mathematical explanation with definitions and conditions.
-4. A Mermaid diagram with a short interpretation.
-5. Practical limits and common misunderstandings.
+- After the frontmatter, write a `#` title followed immediately by a one-line summary: conclusion first.
+- Split topics with `##` headings and link related notes using Obsidian `[[wikilinks]]`.
 
-## Accuracy and final check
+## Language and writing
 
-- Do not invent facts, references, examples presented as observations, or results.
-- Cite a compact source link where a nontrivial claim needs support; avoid turning the note into an agent activity log.
-- If research or code inspection does not settle a point, say that it is unknown and identify the limit.
-- Re-read for a human audience, verify the character budget, and remove redundant sentences.
-- Preserve existing notes and project-specific rules; make only the changes requested by the user.
+- Write in Korean by default; use English only when the user requests it.
+- Keep technical terms in their original form when clearer, with a Korean explanation on first use, such as `확산 모델(diffusion model)`.
+- Define every abbreviation on first use.
+- Aim for about 40-50 Korean characters per sentence, spaces included. Split chained clauses rather than counting obsessively.
+- Keep prose paragraphs to about 300 characters at most, roughly 3-5 short sentences.
+- Keep the whole article to 3,000 characters at most. Shorter is fine; there is no minimum length and no reason to add filler.
+- Treat the length figures as approximate readability targets, not an excuse to omit essential conditions or make prose unnatural.
+- Do not include XML tags, prompt-style instructions, agent activity logs, or "As an AI..." text in articles.
+
+## Math and diagrams
+
+- Use equations and diagrams when they explain faster than words; do not force irrelevant ones into a note.
+- Use `$...$` for inline math and `$$...$$` for block math, compatible with Obsidian MathJax.
+- Use fenced `mermaid` blocks for diagrams. Do not use images or ASCII art.
+- Before every formula or diagram, write one sentence explaining what it shows.
+- After a formula, define every symbol in a short list. State assumptions, units, and coordinate frames where relevant; check dimensions and explicitly identify frame or unit conversions.
+- Explain diagram relationships and the meaning of arrows. Markup alone is not an explanation.
+
+## Example of desired output
+
+This is a short format example, not a required minimum length. Dates are placeholders to replace when writing a real note.
+
+````markdown
+---
+title: 평균 속력
+created: YYYY-MM-DD
+updated: YYYY-MM-DD
+tags: [운동, 속력]
+---
+
+# 평균 속력
+
+> 평균 속력은 이동한 전체 거리를 걸린 시간으로 나눈 값이다.
+
+## 계산
+
+아래 식은 이동 전체를 하나의 속력 값으로 요약한다.
+
+$$v = \frac{d}{t}$$
+
+- $v$: 평균 속력, 단위는 $\mathrm{m/s}$
+- $d$: 이동한 전체 거리, 단위는 $\mathrm{m}$
+- $t$: 걸린 시간, 단위는 $\mathrm{s}$이며 $t > 0$
+
+## 흐름
+
+아래 그림의 화살표는 계산에 필요한 입력과 결과를 잇는다.
+
+```mermaid
+flowchart LR
+  A[전체 거리] --> C[거리를 시간으로 나누기]
+  B[걸린 시간] --> C
+  C --> D[평균 속력]
+```
+
+## 주의할 점
+
+평균 속력은 이동 중 매 순간의 속력을 뜻하지 않는다.
+````
+
+## Accuracy and completion
+
+- Do not invent facts, sources, or examples presented as observations. Cite a compact source link when a nontrivial claim needs support.
+- If research or code inspection does not settle a point, state that it is unknown.
+- Preserve existing notes and project-specific rules. Never move an agent document here without rewriting it for a human reader.
+- After writing, tell the user the file path and a one-line summary.

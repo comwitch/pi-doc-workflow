@@ -21,13 +21,13 @@ Restart Pi or run `/reload`. A local installation references the checkout; keep 
 For another PC, first host this Git repository yourself, commit the reviewed files, and create a release tag. Replace the account and repository placeholders below:
 
 ```bash
-pi install git:github.com/YOUR_ACCOUNT/pi-doc-workflow@v0.1.0
+pi install git:github.com/YOUR_ACCOUNT/pi-doc-workflow@v0.2.0
 ```
 
 Install the same tag on every PC. Tags must be treated as immutable; a commit hash gives stronger reproducibility. Install a new explicit ref to move to another release:
 
 ```bash
-pi install git:github.com/YOUR_ACCOUNT/pi-doc-workflow@v0.2.0
+pi install git:github.com/YOUR_ACCOUNT/pi-doc-workflow@v0.3.0
 ```
 
 That second command is an example for a future release, not a release already published. Updating a pinned Git source does not automatically advance it to a newer tag. No remote repository, release, external upload, or global installation is created by merely having this checkout.
@@ -77,15 +77,23 @@ Example writing requests:
 /skill:project-docs Prepare an evidence-based solver handoff in aidocs/.
 ```
 
-The extension adds a short routing instruction when an initialized project starts an agent turn. It does not load the entire document collection. The skill explicitly reads the selected project-local `AGENTS.md`; do not assume every AI tool discovers nested instruction files automatically.
+The extension adds a short routing instruction when an initialized project starts an agent turn. It does not load the entire document collection. The skill's folder registry maps each audience to its project-local `AGENTS.md` and bundled default rule template. It explicitly reads the selected rules, searches for an existing same-topic note before creating one, and requires rewriting content when changing the target reader. Do not assume every AI tool discovers nested instruction files automatically.
+
+The registry follows the folder-specific rule-reading principle from the supplied `CLAUDE.md`, but this package retains Pi's `docs/AGENTS.md` and `aidocs/AGENTS.md` paths. It does not generate root `CLAUDE.md` or `.claude/rules` and `.claude/templates` files. Adding a registry row alone does not add automatic initialization for another folder; that requires a separate code change and tests.
 
 ### Human notes
 
-Articles default to Korean, use one topic per note, and target approximately 40-50 characters per sentence, approximately 300 per prose paragraph, and 1,500-3,000 per article. English is used on request. The rules define the character-count convention. Equations use Obsidian LaTeX syntax and diagrams use Mermaid; each must have an explanation, not just markup. Irrelevant equations must not be fabricated to satisfy formatting.
+Articles default to Korean with short Korean topic filenames, using English technical terms where appropriate. Start with YAML fields `title`, `created`, `updated`, and `tags`, then a title and a one-line conclusion. Define abbreviations on first use and link related notes using Obsidian `[[wikilinks]]`.
+
+Use one idea per sentence, one point per paragraph, and one topic per section. Aim for approximately 40-50 Korean characters per sentence, about 300 at most per prose paragraph, and 3,000 at most per article. These are approximate readability targets: shorter is fine, there is no minimum, and filler is prohibited. English is used on request. Equations use Obsidian LaTeX syntax and diagrams use Mermaid, without images or ASCII art. Introduce each formula or diagram before it appears, define every formula symbol afterward, and explain diagram arrows. Use these representations only when they clarify the topic. Human articles contain no XML tags or prompt-style instructions.
 
 ### Agent documents
 
-Documents default to English, put long references and important source locations first, separate data and instructions using XML-style tags, give concrete expected-output examples, cite evidence for factual claims, and end with task instructions and questions. Verified findings, inferences, proposals, and unknowns must be distinguished. Synthetic examples are labeled explicitly. Not knowing is acceptable; hiding uncertainty is not.
+Documents use English only, except proper nouns, quoted user wording, and literal Korean identifiers. Use kebab-case filenames and YAML fields `title`, `created`, `updated`, `author`, `status`, and `related`; preserve `created` when updating. A requested handoff or pause of a multi-step task is a writing trigger. Assume the next agent has no current session context: completeness beats brevity.
+
+Use exactly four top-level sections in order: `## Context`, `## Decisions`, `## Open questions`, `## Next actions`. Put long references and important source locations first in Context, using `<log>`, `<excerpt>`, and `<output_examples>` tags to distinguish reference material and examples. End with numbered next actions and their reasons. Use consistent terms and exact known values, cite inspected evidence for factual claims, and mark unchecked statements with `UNVERIFIED:`. Include concrete expected-output examples when a format is required; distinguish synthetic examples, verified findings, inferences, and proposals. Not knowing is acceptable; hiding uncertainty is not.
+
+After writing either kind of document, report its path and a one-line summary. These defaults do not override older or customized project-local rules; use the update review below to adopt them explicitly.
 
 These are model instructions, not a guarantee of prose quality, citation validity, length compliance, or confidentiality. Review generated documents. The package has no network calls, but normal Pi/model use may send requested text to the configured AI provider. It does not authorize uploading private content or images.
 
@@ -97,7 +105,7 @@ These are model instructions, not a guarantee of prose quality, citation validit
 4. Review and manually merge only the desired changes into each `AGENTS.md`, after authorizing the edit. Preserve project-specific additions.
 5. Run `/docs-status` again. Exact template matches are reported; historical version records intentionally remain unchanged.
 
-There is deliberately no automatic apply command in v0.1.0. Upgrading the package is not consent to replace project policies. The metadata describes **initialization history**, not an assertion that a customized file has a particular current template version. Candidate files that were manually changed are never overwritten; retain them and resolve the conflict yourself before trying the same candidate version again.
+There is deliberately no automatic apply command in v0.2.0. Upgrading the package is not consent to replace project policies. The metadata describes **initialization history**, not an assertion that a customized file has a particular current template version. Candidate files that were manually changed are never overwritten; retain them and resolve the conflict yourself before trying the same candidate version again.
 
 ## Version control and portability
 

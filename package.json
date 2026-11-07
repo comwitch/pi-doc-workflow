@@ -1,6 +1,6 @@
 {
   "name": "pi-doc-workflow",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Portable human notes and evidence-based agent documentation for Pi.",
   "private": true,
   "type": "module",

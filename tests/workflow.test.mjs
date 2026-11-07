@@ -164,7 +164,8 @@ test("a new package version does not migrate existing rules or falsify recorded 
   mkdirSync(join(release, "lib"));
   mkdirSync(join(release, "templates"));
   copyFileSync(join(packageRoot, "lib/workflow.mjs"), join(release, "lib/workflow.mjs"));
-  writeFileSync(join(release, "package.json"), JSON.stringify({ version: "0.2.0" }));
+  const nextVersion = `0.${Number(VERSION.split(".")[1]) + 1}.0`;
+  writeFileSync(join(release, "package.json"), JSON.stringify({ version: nextVersion }));
   for (const rule of RULES) {
     writeFileSync(join(release, "templates", `${rule.split("/")[0]}-AGENTS.md`), "New version rules\n");
   }
@@ -172,7 +173,7 @@ test("a new package version does not migrate existing rules or falsify recorded 
   assert.deepEqual(next.initialize(root).created, []);
   assert.equal(readFileSync(join(root, "docs/AGENTS.md"), "utf8"), before);
   const candidates = next.prepareUpdate(root);
-  assert.match(candidates[0].candidate, /0\.2\.0/);
+  assert.equal(candidates[0].candidate.includes(`/${nextVersion}/`), true);
   assert.equal(readState(root).rules["docs/AGENTS.md"].templateVersion, VERSION);
   assert.equal(next.status(root).rules[0].matchesInstalledTemplate, false);
 });
@@ -265,6 +266,41 @@ test("manifest and skill resources are portable and present", () => {
   const skill = readFileSync(join(packageRoot, "skills/project-docs/SKILL.md"), "utf8");
   assert.match(skill, /^---\nname: project-docs\ndescription:/);
   assert.equal(skill.includes("/home/"), false);
-  assert.equal(template(RULES[0]).includes("1,500"), true);
-  assert.equal(template(RULES[1]).includes("Not knowing is acceptable"), true);
+  for (const rule of RULES) assert.match(template(rule), new RegExp(`template=${VERSION.replaceAll(".", "\\.")}`));
+});
+
+test("human-note defaults match the revised format without a minimum length", () => {
+  const human = template("docs/AGENTS.md");
+  for (const field of ["title", "created", "updated", "tags"]) assert.match(human, new RegExp(`^${field}:`, "m"));
+  assert.match(human, /3,000 characters at most/);
+  assert.match(human, /no minimum length/);
+  assert.doesNotMatch(human, /1,500|completion check|Count Unicode/);
+  assert.match(human, /one-line summary: conclusion first/);
+  assert.match(human, /After a formula, define every symbol/);
+  assert.match(human, /Do not use images or ASCII art/);
+  assert.match(human, /\[\[wikilinks\]\]/);
+});
+
+test("agent-note defaults use metadata and the fixed handoff section order", () => {
+  const agent = template("aidocs/AGENTS.md");
+  for (const field of ["title", "created", "updated", "author", "status", "related"]) assert.match(agent, new RegExp(`^${field}:`, "m"));
+  const sections = [...agent.matchAll(/^## (Context|Decisions|Open questions|Next actions)$/gm)].map((match) => match[1]);
+  assert.deepEqual(sections, ["Context", "Decisions", "Open questions", "Next actions"]);
+  assert.match(agent, /UNVERIFIED:/);
+  assert.match(agent, /English only/);
+  assert.match(agent, /Completeness beats brevity/);
+  assert.match(agent, /Not knowing is acceptable/);
+  assert.match(agent, /<output_examples>/);
+  assert.match(agent, /synthetic format demonstration/);
+});
+
+test("skill registry keeps Pi paths and local rule precedence", () => {
+  const skill = readFileSync(join(packageRoot, "skills/project-docs/SKILL.md"), "utf8");
+  assert.match(skill, /## Folder registry/);
+  for (const rule of RULES) assert.equal(skill.includes(`\`${rule}\``), true);
+  assert.match(skill, /no permission|not permission to override older or customized local rules/);
+  assert.match(skill, /without rewriting it for the target reader/);
+  assert.match(skill, /same topic or task/);
+  assert.doesNotMatch(skill, /1,500-3,000|counting convention/);
+  assert.match(skill, /No `\.claude\/` files are generated/);
 });
